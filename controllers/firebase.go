@@ -2,22 +2,29 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"os"
 
 	firebase "firebase.google.com/go/v4"
 	auth "firebase.google.com/go/v4/auth"
+	"github.com/joho/godotenv"
+	"google.golang.org/api/option"
 )
 
 var AuthClient *auth.Client
 
 func InitAuth() {
-	app, err := firebase.NewApp(context.Background(), nil)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	creds := []byte(os.Getenv("JSON_CREDS"))
+	app, err := firebase.NewApp(context.Background(), nil, option.WithCredentialsJSON(creds))
 	if err != nil {
 		log.Fatalf("error initializing app: %v\n", err)
 	}
 	client, err := app.Auth(context.Background())
-	fmt.Println(client)
 	if err != nil {
 		log.Fatalf("error connecting to auth client: %v\n", err)
 	}
