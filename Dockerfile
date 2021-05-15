@@ -27,9 +27,8 @@ WORKDIR /root/
 
 # Copy the Pre-built binary file from the previous stage. Observe we also copied the .env file
 COPY --from=builder /app/main .
-COPY --from=builder /app/cowin-notifier-1701c-firebase-adminsdk-6eotk-7f7916f98c.json .
+COPY --from=builder /app/.env .
 
-ENV GOOGLE_APPLICATION_CREDENTIALS  "./cowin-notifier-1701c-firebase-adminsdk-6eotk-7f7916f98c.json"
 ENV GIN_MODE release
 # Expose port 8080 to the outside world
 EXPOSE 8000
