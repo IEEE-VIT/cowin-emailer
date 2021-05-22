@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type CreateUserInput struct {
@@ -15,6 +16,10 @@ type CreateUserInput struct {
 type UpdateUserInput struct {
 	Age      uint   `json:"age"`
 	District string `json:"district"`
+}
+
+type DeleteUserInput struct {
+	UID string `json:"uid" binding:"required"`
 }
 
 func CreateUser(c *gin.Context) {
@@ -83,5 +88,32 @@ func GetUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": user, "user_exists": true})
+
+}
+
+func DeleteUser(c *gin.Context) {
+	var input DeleteUserInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	uid := input.UID
+	err := db.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("uid = ?", uid).Delete(&db.User{}).Error; err != nil {
+			return err
+		}
+		if err := DeleteFirebaseUser(uid); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"user_deleted": false})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user_deleted": true})
 
 }

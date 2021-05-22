@@ -40,3 +40,8 @@ func CheckUID(uid string) bool {
 	}
 	return true
 }
+
+func DeleteFirebaseUser(uid string) error {
+	err := AuthClient.DeleteUser(context.Background(), uid)
+	return err
+}
